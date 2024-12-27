@@ -1,0 +1,92 @@
+import { useState, useEffect } from 'react'
+import { Buffer } from 'buffer';
+import { SolanaWallet } from './components/solana';
+import { EyeIcon, EyeOffIcon, ClipboardCopyIcon } from "@heroicons/react/solid";
+import './App.css'
+
+window.Buffer = Buffer;
+
+function App() {
+  const [mnemonic, setMnemonic] = useState('');
+  const [generateMnemonic, setGenerateMnemonic] = useState(null);
+  const [showMnemonic, setShowMnemonic] = useState(false);
+
+  useEffect(() => {
+    import('bip39').then(bip39 => {
+      setGenerateMnemonic(() => bip39.generateMnemonic);
+    });
+  }, []);
+
+  const handleGenerateMnemonic = () => {
+    if (generateMnemonic) {
+      const newMnemonic = generateMnemonic();
+      setMnemonic(newMnemonic);
+      setShowMnemonic(false);
+    }
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    // You can add a toast notification here
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="max-w-lg w-full space-y-8 bg-white p-10 rounded-xl shadow-2xl">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Solana Wallet Generator
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Generate your secure Solana wallet
+          </p>
+        </div>
+        <div className="mt-8 space-y-6">
+          <button
+            onClick={handleGenerateMnemonic}
+            disabled={!generateMnemonic}
+            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150 ease-in-out"
+          >
+            Generate Mnemonic
+          </button>
+          {mnemonic && (
+            <div className="space-y-4">
+              <div className="bg-gray-100 p-4 rounded-md">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-medium text-gray-900">Your Mnemonic Phrase:</h3>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => setShowMnemonic(!showMnemonic)}
+                      className="p-1 rounded-md hover:bg-gray-200 transition duration-150 ease-in-out"
+                    >
+                      {showMnemonic ? (
+                        <EyeOffIcon className="h-5 w-5 text-gray-600" />
+                      ) : (
+                        <EyeIcon className="h-5 w-5 text-gray-600" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => copyToClipboard(mnemonic)}
+                      className="p-1 rounded-md hover:bg-gray-200 transition duration-150 ease-in-out"
+                    >
+                      <ClipboardCopyIcon className="h-5 w-5 text-gray-600" />
+                    </button>
+                  </div>
+                </div>
+                <p className="mt-1 text-sm text-gray-600 break-words font-mono">
+                  {showMnemonic ? mnemonic : '•'.repeat(mnemonic.length)}
+                </p>
+              </div>
+              <div className="border-t border-gray-200 pt-4">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Your Wallets:</h3>
+                <SolanaWallet mnemonic={mnemonic} />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default App;
